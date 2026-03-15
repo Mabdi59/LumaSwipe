@@ -1,7 +1,9 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, Layout } from '../constants';
+import { Layout, type ThemeColors } from '../constants';
+import { useAppPreferences } from '../context/AppPreferencesContext';
+import { blurWebActiveElement } from '../utils/web';
 
 interface FavoriteButtonProps {
   isFavorite: boolean;
@@ -18,21 +20,28 @@ export const FavoriteButton: React.FC<FavoriteButtonProps> = ({
   style,
   variant = 'glass',
 }) => {
+  const { colors } = useAppPreferences();
+  const styles = createStyles(colors);
+
   const bgColors = {
-    glass: isFavorite ? 'rgba(255,101,132,0.25)' : Colors.glassBg,
-    solid: isFavorite ? Colors.accent : Colors.surface,
-    minimal: Colors.transparent,
+    glass: isFavorite ? 'rgba(255,101,132,0.25)' : colors.glassBg,
+    solid: isFavorite ? colors.accent : colors.surface,
+    minimal: colors.transparent,
   };
 
   const borderColors = {
-    glass: isFavorite ? Colors.accent : Colors.glassBorder,
-    solid: isFavorite ? Colors.accent : Colors.surface,
-    minimal: Colors.transparent,
+    glass: isFavorite ? colors.accent : colors.glassBorder,
+    solid: isFavorite ? colors.accent : colors.surface,
+    minimal: colors.transparent,
+  };
+  const handleToggle = () => {
+    blurWebActiveElement();
+    onToggle();
   };
 
   return (
     <TouchableOpacity
-      onPress={onToggle}
+      onPress={handleToggle}
       activeOpacity={0.8}
       style={[
         styles.button,
@@ -47,13 +56,13 @@ export const FavoriteButton: React.FC<FavoriteButtonProps> = ({
       <Ionicons
         name={isFavorite ? 'heart' : 'heart-outline'}
         size={size}
-        color={isFavorite ? Colors.accent : Colors.white}
+        color={isFavorite ? colors.accent : colors.white}
       />
     </TouchableOpacity>
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   button: {
     width: 44,
     height: 44,

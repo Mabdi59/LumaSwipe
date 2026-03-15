@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
-import { Colors, FontSizes, FontWeights, Layout } from '../constants';
+import { FontSizes, FontWeights, Layout, type ThemeColors } from '../constants';
+import { useAppPreferences } from '../context/AppPreferencesContext';
+import { blurWebActiveElement } from '../utils/web';
 
 interface TagPillProps {
   label: string;
@@ -17,11 +19,19 @@ export const TagPill: React.FC<TagPillProps> = ({
   style,
   small = false,
 }) => {
+  const { colors } = useAppPreferences();
+  const styles = createStyles(colors);
   const Component = onPress ? TouchableOpacity : View;
+  const handlePress = onPress
+    ? () => {
+        blurWebActiveElement();
+        onPress();
+      }
+    : undefined;
 
   return (
     <Component
-      onPress={onPress}
+      onPress={handlePress}
       activeOpacity={0.75}
       style={[
         styles.pill,
@@ -43,7 +53,7 @@ export const TagPill: React.FC<TagPillProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   pill: {
     paddingHorizontal: Layout.spacing.md,
     paddingVertical: Layout.spacing.sm,
@@ -56,12 +66,12 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   pillActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   pillInactive: {
-    backgroundColor: Colors.surface,
-    borderColor: Colors.glassBorder,
+    backgroundColor: colors.surface,
+    borderColor: colors.glassBorder,
   },
   label: {
     fontSize: FontSizes.sm,
@@ -72,9 +82,9 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.xs,
   },
   labelActive: {
-    color: Colors.white,
+    color: colors.white,
   },
   labelInactive: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
 });

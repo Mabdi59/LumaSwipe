@@ -3,49 +3,54 @@ import {
   View,
   Text,
   StyleSheet,
-  Dimensions,
   Animated,
+  Platform,
   StatusBar,
   ImageBackground,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Colors, FontSizes, FontWeights, Layout, GradientPresets } from '../constants';
+import { FontSizes, FontWeights, Layout, type ThemeColors } from '../constants';
 import { PrimaryButton } from '../components';
-
-const { width: W, height: H } = Dimensions.get('window');
-
-type OnboardingScreenProps = {
-  navigation: NativeStackNavigationProp<any>;
-};
+import { useAppPreferences } from '../context/AppPreferencesContext';
+import { useBlurActiveElementOnBlur } from '../hooks/useBlurActiveElementOnBlur';
+import type { OnboardingScreenProps } from '../navigation/types';
 
 export default function OnboardingScreen({ navigation }: OnboardingScreenProps) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(40)).current;
   const logoScale = useRef(new Animated.Value(0.8)).current;
+  const useNativeDriver = Platform.OS !== 'web';
+  const { colors, completeOnboarding } = useAppPreferences();
+  const styles = createStyles(colors);
+  useBlurActiveElementOnBlur();
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 900,
-        useNativeDriver: true,
+        useNativeDriver,
       }),
       Animated.spring(slideAnim, {
         toValue: 0,
         tension: 60,
         friction: 8,
-        useNativeDriver: true,
+        useNativeDriver,
       }),
       Animated.spring(logoScale, {
         toValue: 1,
         tension: 80,
         friction: 6,
-        useNativeDriver: true,
+        useNativeDriver,
       }),
     ]).start();
-  }, []);
+  }, [fadeAnim, logoScale, slideAnim, useNativeDriver]);
+
+  const handleStart = () => {
+    completeOnboarding();
+    navigation.replace('Main');
+  };
 
   return (
     <View style={styles.container}>
@@ -104,21 +109,21 @@ export default function OnboardingScreen({ navigation }: OnboardingScreenProps) 
         >
           <PrimaryButton
             title="Start Exploring"
-            onPress={() => navigation.replace('Main')}
+            onPress={handleStart}
             size="lg"
             style={styles.ctaButton}
           />
-          <Text style={styles.byline}>Designed & Developed by Mohamed Abdi</Text>
+          <Text style={styles.byline}>Designed and developed by Mohamed Abdi</Text>
         </Animated.View>
       </SafeAreaView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
   },
   safe: {
     flex: 1,
@@ -138,10 +143,10 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: Colors.primaryLight,
+    backgroundColor: colors.primaryLight,
   },
   topBadgeText: {
-    color: Colors.primaryLight,
+    color: colors.primaryLight,
     fontSize: FontSizes.sm,
     fontWeight: FontWeights.semibold,
     letterSpacing: 2,
@@ -152,7 +157,7 @@ const styles = StyleSheet.create({
     gap: Layout.spacing.md,
   },
   appName: {
-    color: Colors.white,
+    color: colors.white,
     fontSize: 56,
     fontWeight: FontWeights.black,
     letterSpacing: -2,
@@ -172,15 +177,15 @@ const styles = StyleSheet.create({
     gap: Layout.spacing.sm,
   },
   pill: {
-    backgroundColor: Colors.glassBg,
+    backgroundColor: colors.glassBg,
     borderRadius: Layout.radius.full,
     borderWidth: 1,
-    borderColor: Colors.glassBorder,
+    borderColor: colors.glassBorder,
     paddingHorizontal: Layout.spacing.md,
     paddingVertical: Layout.spacing.sm,
   },
   pillText: {
-    color: Colors.white,
+    color: colors.white,
     fontSize: FontSizes.sm,
     fontWeight: FontWeights.medium,
   },
@@ -192,7 +197,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   byline: {
-    color: Colors.textMuted,
+    color: colors.textMuted,
     fontSize: FontSizes.xs,
     letterSpacing: 0.5,
   },

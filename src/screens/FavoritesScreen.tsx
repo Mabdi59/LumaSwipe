@@ -1,35 +1,53 @@
 import React from 'react';
 import {
   View,
-  Text,
   StyleSheet,
-  FlatList,
-  TouchableOpacity,
+  ScrollView,
   StatusBar,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
 
 import { destinations } from '../data/destinations';
-import { Colors, FontSizes, FontWeights, Layout, GradientPresets } from '../constants';
+import { Layout, type ThemeColors } from '../constants';
 import { EmptyState } from '../components/EmptyState';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { SectionHeader } from '../components/SectionHeader';
 import { DestinationCard } from '../components/DestinationCard';
+import { useAppPreferences } from '../context/AppPreferencesContext';
+import { useBlurActiveElementOnBlur } from '../hooks/useBlurActiveElementOnBlur';
 import { useFavorites } from '../hooks/useFavorites';
+import { useTripPlanner } from '../context/TripPlannerContext';
+import { getTripStatusRank } from '../utils/tripPlanner';
+import type { FavoritesScreenProps } from '../navigation/types';
 
-export default function FavoritesScreen() {
-  const navigation = useNavigation<any>();
+export default function FavoritesScreen({ navigation }: FavoritesScreenProps) {
+  const { colors, gradients, statusBarStyle } = useAppPreferences();
   const { favorites, isFavorite, toggleFavorite } = useFavorites();
+  const { getTripPlan } = useTripPlanner();
+  const isWeb = Platform.OS === 'web';
+  const styles = createStyles(colors);
+  useBlurActiveElementOnBlur();
 
-  const favoriteDestinations = destinations.filter((d) => favorites.includes(d.id));
+  const favoriteDestinations = destinations
+    .filter((d) => favorites.includes(d.id))
+    .sort((left, right) => {
+      const leftPlan = getTripPlan(left.id);
+      const rightPlan = getTripPlan(right.id);
+      const statusGap = getTripStatusRank(leftPlan?.status) - getTripStatusRank(rightPlan?.status);
+
+      if (statusGap !== 0) {
+        return statusGap;
+      }
+
+      return left.name.localeCompare(right.name);
+    });
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-      <LinearGradient colors={GradientPresets.onboarding} style={StyleSheet.absoluteFill} />
+      <StatusBar barStyle={statusBarStyle} translucent backgroundColor="transparent" />
+      <LinearGradient colors={gradients.onboarding} style={StyleSheet.absoluteFill} />
 
       <SafeAreaView style={styles.safe} edges={['top']}>
         {/* Header */}
@@ -57,34 +75,35 @@ export default function FavoritesScreen() {
             />
           </EmptyState>
         ) : (
-          <FlatList
-            data={favoriteDestinations}
-            keyExtractor={(item) => item.id}
+          <ScrollView
             contentContainerStyle={styles.list}
             showsVerticalScrollIndicator={false}
-            numColumns={1}
-            renderItem={({ item }) => (
-              <View style={styles.cardWrapper}>
+          >
+            {favoriteDestinations.map((item) => (
+              <View key={item.id} style={styles.cardWrapper}>
                 <DestinationCard
                   destination={item}
                   isFavorite={isFavorite(item.id)}
                   onToggleFavorite={() => toggleFavorite(item.id)}
                   onPress={() => navigation.navigate('Details', { destinationId: item.id })}
-                  style={styles.card}
+                  style={[
+                    styles.card,
+                    isWeb && styles.webCard,
+                  ]}
                 />
               </View>
-            )}
-          />
+            ))}
+          </ScrollView>
         )}
       </SafeAreaView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
   },
   safe: {
     flex: 1,
@@ -104,5 +123,9 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     height: 220,
+  },
+  webCard: {
+    maxWidth: 720,
+    alignSelf: 'center',
   },
 });

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
-import { Colors, FontSizes, FontWeights, Layout } from '../constants';
+import { Layout, type ThemeColors } from '../constants';
+import { useAppPreferences } from '../context/AppPreferencesContext';
 
 interface GlassCardProps {
   children: React.ReactNode;
@@ -8,15 +9,18 @@ interface GlassCardProps {
 }
 
 export const GlassCard: React.FC<GlassCardProps> = ({ children, style }) => {
+  const { colors } = useAppPreferences();
+  const styles = createStyles(colors);
+
   return <View style={[styles.card, style]}>{children}</View>;
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: {
-    backgroundColor: Colors.glassBg,
+    backgroundColor: colors.glassBg,
     borderRadius: Layout.radius.lg,
     borderWidth: 1,
-    borderColor: Colors.glassBorder,
+    borderColor: colors.glassBorder,
     padding: Layout.spacing.md,
   },
 });

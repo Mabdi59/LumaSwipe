@@ -6,11 +6,20 @@ import {
   ImageBackground,
   TouchableOpacity,
   Dimensions,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { Destination } from '../data/destinations';
-import { Colors, FontSizes, FontWeights, Layout, GradientPresets } from '../constants';
+import { FontSizes, FontWeights, Layout, type ThemeColors } from '../constants';
+import { useAppPreferences } from '../context/AppPreferencesContext';
+import { useTripPlanner } from '../context/TripPlannerContext';
+import {
+  getTripStatusColor,
+  getTripPlanDisplayLabel,
+  getTripStatusTextColor,
+} from '../utils/tripPlanner';
+import { blurWebActiveElement } from '../utils/web';
 import { FavoriteButton } from './FavoriteButton';
 import { TagPill } from './TagPill';
 
@@ -33,13 +42,23 @@ export const DestinationCard: React.FC<DestinationCardProps> = ({
   style,
   compact = false,
 }) => {
+  const { colors, gradients } = useAppPreferences();
+  const { getTripPlan } = useTripPlanner();
+  const styles = createStyles(colors);
   const cardHeight = compact ? 220 : Layout.card.height;
   const cardWidth = compact ? SCREEN_WIDTH / 2 - 24 : Layout.card.width;
+  const tripPlan = getTripPlan(destination.id);
+  const tripBadgeLabel = tripPlan ? getTripPlanDisplayLabel(tripPlan) : null;
+  const tripBadgeColor = getTripStatusColor(colors, tripPlan?.status);
+  const tripBadgeTextColor = getTripStatusTextColor(colors, tripPlan?.status);
 
   return (
     <TouchableOpacity
       activeOpacity={0.95}
-      onPress={onPress}
+      onPress={() => {
+        blurWebActiveElement();
+        onPress();
+      }}
       style={[styles.card, { width: cardWidth, height: cardHeight }, style]}
     >
       <ImageBackground
@@ -50,15 +69,24 @@ export const DestinationCard: React.FC<DestinationCardProps> = ({
       >
         {/* Gradient overlay */}
         <LinearGradient
-          colors={GradientPresets.heroOverlay}
+          colors={gradients.heroOverlay}
           locations={[0, 0.4, 1]}
           style={styles.gradient}
         >
           {/* Top row */}
           <View style={styles.topRow}>
-            <View style={styles.ratingBadge}>
-              <Ionicons name="star" size={10} color={Colors.accentAlt} />
-              <Text style={styles.ratingText}>{destination.rating.toFixed(1)}</Text>
+            <View style={styles.topMeta}>
+              <View style={styles.ratingBadge}>
+                <Ionicons name="star" size={10} color={colors.accentAlt} />
+                <Text style={styles.ratingText}>{destination.rating.toFixed(1)}</Text>
+              </View>
+              {tripBadgeLabel && (
+                <View style={[styles.tripBadge, { backgroundColor: tripBadgeColor }]}>
+                  <Text style={[styles.tripBadgeText, { color: tripBadgeTextColor }]}>
+                    {tripBadgeLabel}
+                  </Text>
+                </View>
+              )}
             </View>
             <FavoriteButton
               isFavorite={isFavorite}
@@ -83,7 +111,7 @@ export const DestinationCard: React.FC<DestinationCardProps> = ({
               {destination.name}
             </Text>
             <View style={styles.locationRow}>
-              <Ionicons name="location" size={12} color={Colors.accent} />
+              <Ionicons name="location" size={12} color={colors.accent} />
               <Text style={styles.country}>{destination.country}</Text>
             </View>
             {!compact && (
@@ -107,24 +135,35 @@ export const DestinationCard: React.FC<DestinationCardProps> = ({
 const MetaPill: React.FC<{ icon: keyof typeof Ionicons.glyphMap; label: string }> = ({
   icon,
   label,
-}) => (
-  <View style={styles.metaPill}>
-    <Ionicons name={icon} size={11} color={Colors.textSecondary} />
-    <Text style={styles.metaText} numberOfLines={1}>
-      {label}
-    </Text>
-  </View>
-);
+}) => {
+  const { colors } = useAppPreferences();
+  const styles = createStyles(colors);
 
-const styles = StyleSheet.create({
+  return (
+    <View style={styles.metaPill}>
+      <Ionicons name={icon} size={11} color={colors.textSecondary} />
+      <Text style={styles.metaText} numberOfLines={1}>
+        {label}
+      </Text>
+    </View>
+  );
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: {
     borderRadius: Layout.radius.xl,
     overflow: 'hidden',
-    shadowColor: Colors.cardShadow,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 20,
-    elevation: 10,
+    ...(Platform.OS === 'web'
+      ? {
+          boxShadow: `0px 8px 20px ${colors.cardShadow}`,
+        }
+      : {
+          shadowColor: colors.cardShadow,
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.4,
+          shadowRadius: 20,
+          elevation: 10,
+        }),
   },
   image: {
     flex: 1,
@@ -142,6 +181,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  topMeta: {
+    gap: 8,
+  },
   ratingBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -152,9 +194,20 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   ratingText: {
-    color: Colors.white,
+    color: colors.white,
     fontSize: FontSizes.xs,
     fontWeight: FontWeights.bold,
+  },
+  tripBadge: {
+    alignSelf: 'flex-start',
+    borderRadius: Layout.radius.full,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  tripBadgeText: {
+    fontSize: FontSizes.xs,
+    fontWeight: FontWeights.bold,
+    letterSpacing: 0.3,
   },
   categoryRow: {
     flexDirection: 'row',
@@ -166,7 +219,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   name: {
-    color: Colors.white,
+    color: colors.white,
     fontSize: FontSizes.xxl,
     fontWeight: FontWeights.extrabold,
     letterSpacing: -0.5,
@@ -180,7 +233,7 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   country: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: FontSizes.sm,
     fontWeight: FontWeights.medium,
   },
@@ -199,16 +252,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: Colors.glassBg,
+    backgroundColor: colors.glassBg,
     borderRadius: Layout.radius.full,
     borderWidth: 1,
-    borderColor: Colors.glassBorder,
+    borderColor: colors.glassBorder,
     paddingHorizontal: 8,
     paddingVertical: 4,
     maxWidth: 160,
   },
   metaText: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: FontSizes.xs,
     flexShrink: 1,
   },

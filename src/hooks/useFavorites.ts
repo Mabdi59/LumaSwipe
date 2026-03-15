@@ -1,57 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const FAVORITES_KEY = '@lumaswipe_favorites';
+import { useContext } from 'react';
+import { FavoritesContext } from '../context/FavoritesContext';
 
 export function useFavorites() {
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const context = useContext(FavoritesContext);
 
-  useEffect(() => {
-    loadFavorites();
-  }, []);
+  if (!context) {
+    throw new Error('useFavorites must be used within a FavoritesProvider');
+  }
 
-  const loadFavorites = async () => {
-    try {
-      const stored = await AsyncStorage.getItem(FAVORITES_KEY);
-      if (stored) {
-        setFavorites(JSON.parse(stored));
-      }
-    } catch (e) {
-      console.warn('Failed to load favorites:', e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const saveFavorites = async (ids: string[]) => {
-    try {
-      await AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(ids));
-    } catch (e) {
-      console.warn('Failed to save favorites:', e);
-    }
-  };
-
-  const toggleFavorite = useCallback(
-    async (id: string) => {
-      const updated = favorites.includes(id)
-        ? favorites.filter((fid) => fid !== id)
-        : [...favorites, id];
-      setFavorites(updated);
-      await saveFavorites(updated);
-    },
-    [favorites]
-  );
-
-  const isFavorite = useCallback(
-    (id: string) => favorites.includes(id),
-    [favorites]
-  );
-
-  const clearFavorites = useCallback(async () => {
-    setFavorites([]);
-    await saveFavorites([]);
-  }, []);
-
-  return { favorites, loading, toggleFavorite, isFavorite, clearFavorites };
+  return context;
 }

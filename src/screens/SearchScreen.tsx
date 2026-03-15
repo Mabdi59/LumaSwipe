@@ -3,29 +3,35 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
+  ScrollView,
   StatusBar,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
 
-import { Colors, FontSizes, FontWeights, Layout, GradientPresets } from '../constants';
+import { FontSizes, FontWeights, Layout, type ThemeColors } from '../constants';
 import { SearchBar } from '../components/SearchBar';
 import { EmptyState } from '../components/EmptyState';
 import { DestinationCard } from '../components/DestinationCard';
+import { useAppPreferences } from '../context/AppPreferencesContext';
 import { useFavorites } from '../hooks/useFavorites';
+import { useBlurActiveElementOnBlur } from '../hooks/useBlurActiveElementOnBlur';
 import { useSearch } from '../hooks/useSearch';
+import type { SearchScreenProps } from '../navigation/types';
 
-export default function SearchScreen() {
-  const navigation = useNavigation<any>();
+export default function SearchScreen({ navigation }: SearchScreenProps) {
+  const { colors, gradients, statusBarStyle } = useAppPreferences();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { query, setQuery, results, clearSearch } = useSearch();
+  const isWeb = Platform.OS === 'web';
+  const styles = createStyles(colors);
+  useBlurActiveElementOnBlur();
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-      <LinearGradient colors={GradientPresets.onboarding} style={StyleSheet.absoluteFill} />
+      <StatusBar barStyle={statusBarStyle} translucent backgroundColor="transparent" />
+      <LinearGradient colors={gradients.onboarding} style={StyleSheet.absoluteFill} />
 
       <SafeAreaView style={styles.safe} edges={['top']}>
         {/* Header */}
@@ -60,38 +66,38 @@ export default function SearchScreen() {
             style={styles.emptyState}
           />
         ) : (
-          <FlatList
-            data={results}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.list}
+          <ScrollView
             showsVerticalScrollIndicator={false}
-            ListHeaderComponent={
-              <Text style={styles.resultCount}>
-                {results.length} result{results.length !== 1 ? 's' : ''} for "{query}"
-              </Text>
-            }
-            renderItem={({ item }) => (
-              <View style={styles.cardWrapper}>
+            contentContainerStyle={styles.list}
+          >
+            <Text style={styles.resultCount}>
+              {results.length} result{results.length !== 1 ? 's' : ''} for "{query}"
+            </Text>
+            {results.map((item) => (
+              <View key={item.id} style={styles.cardWrapper}>
                 <DestinationCard
                   destination={item}
                   isFavorite={isFavorite(item.id)}
                   onToggleFavorite={() => toggleFavorite(item.id)}
                   onPress={() => navigation.navigate('Details', { destinationId: item.id })}
-                  style={styles.card}
+                  style={[
+                    styles.card,
+                    isWeb && styles.webCard,
+                  ]}
                 />
               </View>
-            )}
-          />
+            ))}
+          </ScrollView>
         )}
       </SafeAreaView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
   },
   safe: {
     flex: 1,
@@ -102,13 +108,13 @@ const styles = StyleSheet.create({
     paddingBottom: Layout.spacing.md,
   },
   title: {
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     fontSize: FontSizes.xxxl,
     fontWeight: FontWeights.extrabold,
     letterSpacing: -1,
   },
   subtitle: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: FontSizes.sm,
     marginTop: 2,
   },
@@ -120,7 +126,7 @@ const styles = StyleSheet.create({
     marginTop: -Layout.spacing.xl,
   },
   resultCount: {
-    color: Colors.textMuted,
+    color: colors.textMuted,
     fontSize: FontSizes.sm,
     marginBottom: Layout.spacing.md,
   },
@@ -134,5 +140,9 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     height: 220,
+  },
+  webCard: {
+    maxWidth: 720,
+    alignSelf: 'center',
   },
 });

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Colors, FontSizes, FontWeights, Layout } from '../constants';
+import { FontSizes, FontWeights, Layout, type ThemeColors } from '../constants';
+import { useAppPreferences } from '../context/AppPreferencesContext';
 
 interface SectionHeaderProps {
   title: string;
@@ -15,6 +16,9 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
   actionLabel,
   onAction,
 }) => {
+  const { colors } = useAppPreferences();
+  const styles = createStyles(colors);
+
   return (
     <View style={styles.container}>
       <View style={styles.textGroup}>
@@ -30,7 +34,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -41,18 +45,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     fontSize: FontSizes.xl,
     fontWeight: FontWeights.bold,
     letterSpacing: -0.3,
   },
   subtitle: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: FontSizes.sm,
     marginTop: 2,
   },
   action: {
-    color: Colors.primary,
+    color: colors.primary,
     fontSize: FontSizes.sm,
     fontWeight: FontWeights.semibold,
   },

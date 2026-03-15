@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, FontSizes, FontWeights, Layout } from '../constants';
+import { FontSizes, FontWeights, Layout, type ThemeColors } from '../constants';
+import { useAppPreferences } from '../context/AppPreferencesContext';
 
 interface EmptyStateProps {
   icon?: keyof typeof Ionicons.glyphMap;
@@ -18,10 +19,13 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   style,
   children,
 }) => {
+  const { colors } = useAppPreferences();
+  const styles = createStyles(colors);
+
   return (
     <View style={[styles.container, style]}>
       <View style={styles.iconCircle}>
-        <Ionicons name={icon} size={44} color={Colors.primary} />
+        <Ionicons name={icon} size={44} color={colors.primary} />
       </View>
       <Text style={styles.title}>{title}</Text>
       {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
@@ -30,7 +34,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
@@ -42,15 +46,15 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 45,
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: Colors.glassBorder,
+    borderColor: colors.glassBorder,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: Layout.spacing.lg,
   },
   title: {
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     fontSize: FontSizes.xl,
     fontWeight: FontWeights.bold,
     textAlign: 'center',
@@ -58,7 +62,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   subtitle: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: FontSizes.md,
     textAlign: 'center',
     lineHeight: 22,
