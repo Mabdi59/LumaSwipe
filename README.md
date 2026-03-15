@@ -1,153 +1,160 @@
 # LumaSwipe
 
-A visually immersive travel discovery mobile app built with React Native and Expo. Discover beautiful destinations through cinematic swipeable cards, smooth animations, and an elegant dark UI.
+LumaSwipe is a travel discovery app built with React Native and Expo. It combines cinematic destination browsing with practical trip planning, live weather, persistent favorites, and a polished mobile-first interface.
 
 ## Author
 
-**Mohamed Abdi**
+Mohamed Abdi
 
-## Screenshots
+## What It Does
 
-The app features:
-- 🌍 Onboarding screen with animated hero background
-- 🗺️ Discover screen with swipeable destination cards
-- 📍 Detailed destination pages with gallery
-- ❤️ Favorites management
-- 🔍 Search by name, country, or vibe
-- 👤 Profile & settings page
+- Animated onboarding experience with a full-screen travel hero
+- Discover screen with category filters and immersive destination cards
+- Destination details with hero imagery, highlights, gallery, and live weather
+- Trip planner with trip stages, notes, and checklist tracking
+- Favorites synced across the app with AsyncStorage persistence
+- Search by name, country, vibe, or category
+- Profile and preferences for theme mode, notifications, and onboarding reset
+- Expo Go support for iPhone and Android, plus web support for local preview
 
-## Built With
+## Current Feature Set
+
+- Onboarding flow with persisted completion state
+- Light and dark themes with shared design tokens
+- Bottom tab navigation plus typed stack routes
+- 12 curated starter destinations
+- Live weather snapshots powered by Open-Meteo
+- Trip statuses: Dreaming, Planning, Booked, Visited
+- Trip notes and custom checklist items per destination
+- Favorites persistence with global synced state
+- Search and filtered discovery flows
+
+## Tech Stack
 
 | Technology | Purpose |
-|---|---|
-| React Native + Expo | Mobile framework |
-| TypeScript | Type safety |
-| React Navigation | Navigation (Stack + Bottom Tabs) |
-| expo-linear-gradient | Beautiful gradients |
-| @expo/vector-icons | Icon set (Ionicons) |
-| @react-native-async-storage | Favorites persistence |
-| react-native-reanimated | Smooth animations |
-| react-native-gesture-handler | Swipe gestures |
+| --- | --- |
+| React Native | Cross-platform UI |
+| Expo | App runtime and developer workflow |
+| TypeScript | Static typing |
+| React Navigation | Stack and bottom tab navigation |
+| AsyncStorage | Persisted favorites, preferences, and trip plans |
+| expo-linear-gradient | Gradients and visual polish |
+| Ionicons | Iconography |
+| Open-Meteo API | Live destination weather |
+| react-native-gesture-handler | Gesture support |
+| react-native-reanimated | Native animations |
 
-## Features
+## Project Structure
 
-- ✅ **Onboarding** – Elegant intro with animations
-- ✅ **Discover** – Full-screen swipeable destination cards with category filters
-- ✅ **Details** – Hero image, stats, highlights, gallery
-- ✅ **Favorites** – Save/remove with AsyncStorage persistence
-- ✅ **Search** – Search by name, country, vibe, or category
-- ✅ **Profile** – Settings page with clear favorites
-- ✅ **12 Destinations** – Santorini, Kyoto, Bali, Machu Picchu, Amalfi Coast, Iceland, Dubai, Maldives, Patagonia, Marrakech, New Zealand, Tuscany
-- ✅ **Dark premium UI** – Glassmorphism, gradients, rounded cards
-- ✅ **Animated transitions** – Spring & fade animations
-
-## Folder Structure
-
-```
+```text
 LumaSwipe/
-├── App.tsx                    # Root component
-├── app.json                   # Expo config
-├── babel.config.js            # Babel (reanimated plugin)
-├── src/
-│   ├── screens/
-│   │   ├── OnboardingScreen.tsx
-│   │   ├── HomeScreen.tsx
-│   │   ├── DetailsScreen.tsx
-│   │   ├── FavoritesScreen.tsx
-│   │   ├── SearchScreen.tsx
-│   │   └── ProfileScreen.tsx
-│   ├── components/
-│   │   ├── DestinationCard.tsx
-│   │   ├── GlassCard.tsx
-│   │   ├── PrimaryButton.tsx
-│   │   ├── SectionHeader.tsx
-│   │   ├── EmptyState.tsx
-│   │   ├── SearchBar.tsx
-│   │   ├── FavoriteButton.tsx
-│   │   ├── TagPill.tsx
-│   │   └── index.ts
-│   ├── navigation/
-│   │   └── AppNavigator.tsx
-│   ├── data/
-│   │   └── destinations.ts    # 12 mock destinations
-│   ├── hooks/
-│   │   ├── useFavorites.ts    # AsyncStorage favorites
-│   │   └── useSearch.ts       # Search logic
-│   ├── utils/
-│   │   └── destinationUtils.ts
-│   └── constants/
-│       ├── colors.ts
-│       ├── layout.ts
-│       └── index.ts
-└── assets/
+|-- App.tsx
+|-- app.json
+|-- babel.config.js
+|-- index.ts
+|-- src/
+|   |-- components/
+|   |-- constants/
+|   |-- context/
+|   |   |-- AppPreferencesContext.tsx
+|   |   |-- FavoritesContext.tsx
+|   |   `-- TripPlannerContext.tsx
+|   |-- data/
+|   |   `-- destinations.ts
+|   |-- hooks/
+|   |   |-- useBlurActiveElementOnBlur.ts
+|   |   |-- useDestinationWeather.ts
+|   |   |-- useFavorites.ts
+|   |   `-- useSearch.ts
+|   |-- navigation/
+|   |   |-- AppNavigator.tsx
+|   |   `-- types.ts
+|   |-- screens/
+|   |   |-- DetailsScreen.tsx
+|   |   |-- FavoritesScreen.tsx
+|   |   |-- HomeScreen.tsx
+|   |   |-- OnboardingScreen.tsx
+|   |   |-- ProfileScreen.tsx
+|   |   `-- SearchScreen.tsx
+|   |-- services/
+|   |   `-- openMeteo.ts
+|   `-- utils/
+|       |-- destinationUtils.ts
+|       |-- tripPlanner.ts
+|       `-- web.ts
+`-- assets/
 ```
 
-## Quick Start
+## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+
-- npm or yarn
-- [Expo Go](https://expo.dev/client) app on your phone (iOS or Android)
+- Node.js 18 or newer
+- npm
+- Expo Go on iPhone or Android if you want to test on device
 
-### Setup
+### Install
 
 ```bash
-# 1. Clone the repository
 git clone https://github.com/Mabdi59/LumaSwipe.git
 cd LumaSwipe
-
-# 2. Install dependencies
 npm install
+```
 
-# 3. Start the Expo development server
+### Run the App
+
+```bash
 npx expo start
 ```
 
-### Running on Device
-
-1. Install **Expo Go** from the App Store (iOS) or Google Play (Android)
-2. Run `npx expo start`
-3. Scan the QR code with Expo Go (Android) or the Camera app (iOS)
-
-### Running on Simulator
+### Common Targets
 
 ```bash
-# iOS (requires macOS + Xcode)
 npx expo start --ios
-
-# Android (requires Android Studio + AVD)
 npx expo start --android
-
-# Web
 npx expo start --web
 ```
 
-## Destination Data
+## Device Testing
 
-The app includes 12 pre-loaded travel destinations:
+1. Start the Expo server with `npx expo start`.
+2. Open Expo Go on your phone.
+3. Scan the QR code or enter the Expo URL manually.
 
-1. 🏛️ **Santorini** – Greece
-2. 🌸 **Kyoto** – Japan
-3. 🌴 **Bali** – Indonesia
-4. 🏔️ **Machu Picchu** – Peru
-5. 🌊 **Amalfi Coast** – Italy
-6. 🌌 **Iceland** – Iceland
-7. 🏙️ **Dubai** – UAE
-8. 🏝️ **Maldives** – Maldives
-9. 🦅 **Patagonia** – Argentina & Chile
-10. 🕌 **Marrakech** – Morocco
-11. 🐑 **New Zealand** – New Zealand
-12. 🍷 **Tuscany** – Italy
+## Data and APIs
 
-## Design System
+- The app ships with 12 seeded destinations for the discovery experience.
+- Live weather uses the public Open-Meteo API, so no API key is required.
+- Favorites, trip plans, checklists, onboarding state, and preferences persist locally with AsyncStorage.
 
-- **Colors**: Dark navy background (`#0D0D1A`) with purple (`#6C63FF`) and pink (`#EC4899`) accents
-- **Typography**: Bold headlines with light body text
-- **Cards**: Full-bleed images with gradient overlays
-- **Glassmorphism**: Semi-transparent cards with border highlights
-- **Animations**: Spring-based transitions
+## Destinations Included
 
----
+- Santorini, Greece
+- Kyoto, Japan
+- Bali, Indonesia
+- Machu Picchu, Peru
+- Amalfi Coast, Italy
+- Iceland
+- Dubai, UAE
+- Maldives
+- Patagonia, Argentina and Chile
+- Marrakech, Morocco
+- New Zealand
+- Tuscany, Italy
 
-*LumaSwipe – Designed & Developed by Mohamed Abdi*
+## Design Direction
+
+- Cinematic image-led cards
+- Glassmorphism surfaces and soft borders
+- High-contrast travel editorial layout
+- Gradient-led accent system
+- Mobile-first interaction with polished transitions
+
+## Notes
+
+- The app is designed primarily for Expo Go and local development builds.
+- Web support is included for previewing flows and UI quickly during development.
+
+## License
+
+This repository includes a `LICENSE` file at the project root.
