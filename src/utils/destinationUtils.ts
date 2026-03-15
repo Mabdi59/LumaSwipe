@@ -15,10 +15,6 @@ export function filterByCategory(category: string): Destination[] {
   return destinations.filter((d) => d.category.includes(category));
 }
 
-export function formatBudget(budget: string): string {
-  return budget;
-}
-
 export function ratingStars(rating: number): string {
   const full = Math.floor(rating);
   const half = rating % 1 >= 0.5 ? 1 : 0;
